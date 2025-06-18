@@ -10,7 +10,7 @@ jobs:
       - name: Code Checkout
         uses: actions/checkout@v4
         
-      - name: Configure AWS Credentials
+      - name: Login to AWS 
         uses: aws-actions/configure-aws-credentials@v4
         with: 
           aws-access-key-id: ${{ secrets.ACCESS_KEY }}
