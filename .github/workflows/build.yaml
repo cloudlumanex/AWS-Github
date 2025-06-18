@@ -3,47 +3,69 @@ name: Build to AWS ECR
 on: push
 
 jobs:
-  configure-aws:
-    runs-on: ubuntu-latest
+  login-to-aws:
+     runs-on: ubuntu-latest
+     steps:
 
-    steps:
-      - name: Code Checkout
-        uses: actions/checkout@v4
+     - name: Code Checkout
+       uses: actions/checkout@v4
 
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.ACCESS_KEY }}
-          aws-secret-access-key: ${{ secrets.SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
+     - name: Login to AWS
+       uses: aws-actions/configure-aws-credentials@v4
+       with:
+         aws-access-key-id: ${{ secrets.ACCESS_KEY }}
+         aws-secret-access-key: ${{ secrets.SECRET_ACCESS_KEY }}
+         aws-region: ${{ secrets.REGION }}
 
-  build-and-push:
-    runs-on: ubuntu-latest
-    needs: configure-aws
+  build-and-push-pub-ecr:
+     runs-on: ubuntu-latest
+     needs:
+         login-to-aws
+         
+     steps:
 
-    steps:
-      - name: Code Checkout
-        uses: actions/checkout@v4
+     - name: Code Checkout
+       uses: actions/checkout@v4
 
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.ACCESS_KEY }}
-          aws-secret-access-key: ${{ secrets.SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
+     - name: Login to AWSECR
+       uses: docker/login-action@v3
+       with:
+         registry: public.ecr.aws
+         username: ${{ secrets.ACCESS_KEY }}
+         password: ${{ secrets.SECRET_ACCESS_KEY }}
+       env:
+         aws-region: ${{ secrets.REGION }}
 
-      - name: Login to AWS Public ECR
-        uses: aws-actions/amazon-ecr-login@v2
-        with:
-          registry-type: public
+     - name: Build Image
+       run: | 
+         docker build -t merchant_api .
+         docker tag merchant_api:latest public.ecr.aws/v6m2z7m5/merchant_api:$GITHUB_RUN_ID
+         docker push public.ecr.aws/v6m2z7m5/merchant_api:$GITHUB_RUN_ID
 
-      - name: Docker Build and Push
-        run: |
-          docker build -t awsgithubaction_api .
+
+  build-and-push-private-ecr:
+     runs-on: ubuntu-latest
+     needs:
+          build-and-push-pub-ecr
+         
+     steps:
+
+     - name: Code Checkout
+       uses: actions/checkout@v4
+
+     - name: Login to AWSECR
+       uses: docker/login-action@v3
+       with:
+         registry: public.ecr.aws
+         username: ${{ secrets.ACCESS_KEY }}
+         password: ${{ secrets.SECRET_ACCESS_KEY }}
+       env:
+         aws-region: ${{ secrets.REGION }}
+
+     - name: Build Image
+       run: | 
+         docker build -t awsgithubaction_api ..
           docker tag awsgithubaction_api:latest public.ecr.aws/b8y5c4r5/awsgithubaction_api:v1
           docker push public.ecr.aws/b8y5c4r5/awsgithubaction_api:v1
     
-        
-      
-          
-        
+    
