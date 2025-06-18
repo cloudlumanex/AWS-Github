@@ -22,6 +22,8 @@ jobs:
 
   Build-and-push-to-public-ECR:
     runs-on: ubuntu-latest
+    needs:
+      login-to-aws:
 
     steps: 
       - name: Code Checkout
@@ -40,8 +42,7 @@ jobs:
           docker build -t awsgithubaction_api ..
           docker tag awsgithubaction_api:latest public.ecr.aws/b8y5c4r5/awsgithubaction_api:v1
           docker push public.ecr.aws/b8y5c4r5/awsgithubaction_api:v1
-    needs:
-      login-to-aws:
+    
         
       
           
