@@ -23,7 +23,7 @@ jobs:
   Build-and-push-to-public-ECR:
     runs-on: ubuntu-latest
     needs:
-      login-to-aws:
+      login-to-aws
 
     steps: 
       - name: Code Checkout
