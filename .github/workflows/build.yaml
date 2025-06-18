@@ -38,6 +38,11 @@ jobs:
       - name: docker build
         run: |
           docker build -t awsgithubaction_api ..
-          docker tag awsgithubaction_api:latest public.ecr.aws/b8y5c4r5/awsgithubaction_api:${BUILD_ID} 
+          docker tag awsgithubaction_api:latest public.ecr.aws/b8y5c4r5/awsgithubaction_api:v1
+          docker push public.ecr.aws/b8y5c4r5/awsgithubaction_api:v1
+    needs:
+      login-to-aws:
+        
+      
           
         
